@@ -79,6 +79,15 @@
   .card .delta.down{color:var(--cost-down);}
   .card .delta.flat{color:var(--ink-muted);}
   .card canvas{width:100% !important;height:44px !important;}
+  .card .ref-line{
+    margin-top:10px;
+    padding-top:8px;
+    border-top:1px dashed var(--line);
+    font-size:11px;
+    color:var(--ink-muted);
+    line-height:1.5;
+  }
+  .card .ref-line b{color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600;}
   .legend-note{font-size:11.5px;color:var(--ink-muted);margin:-24px 0 28px;}
   .legend-note b.up{color:var(--cost-up);}
   .legend-note b.down{color:var(--cost-down);}
@@ -113,25 +122,32 @@
       <div class="stamp" id="lastUpdated">—</div>
     </div>
   </header>
+
   <div class="banner" id="sampleBanner">
     Showing placeholder sample data — this file has not yet been populated by a live scrape run.
   </div>
+
   <div class="cards" id="cards"></div>
   <div class="legend-note">Reading colors from a buyer's perspective: <b class="up">red = cost up</b> since last reading, <b class="down">green = cost down</b>.</div>
+
   <section class="hero">
     <h2>Combined trend, indexed to 100 at first reading</h2>
-    <p>Lets you compare direction and magnitude of movement across items with different units.</p>
+    <p>Lets you compare direction and magnitude of movement across items with different units. Items build up a real trend line as monthly history is backfilled.</p>
     <div class="chart-wrap"><canvas id="heroChart"></canvas></div>
   </section>
+
   <footer>
     <div><strong>Sources</strong></div>
     <div class="sources" id="sourcesList"></div>
     <div>Resin figure is a Chinese domestic polyethylene proxy, not a global CFR spot assessment — free real-time resin spot pricing is not publicly available; treat as a directional indicator only, not a quoted price.</div>
+    <div>Sugar monthly history: Jan–Aug 2025 are real month-end closes; Sep 2025–Aug 2026 are real monthly averages computed from weekly closes (ICE London Sugar No.5, front-month). Thai domestic reference is the สอน. (Office of the Cane and Sugar Board) ex-factory price used to calculate cane payments for the 2025/26 crop year — it resets once per season, not a live market price.</div>
     <div>Generated for internal procurement monitoring at Thainamthip. Not a trading or investment reference.</div>
   </footer>
 </div>
+
 <script>
 const ORDER = ["sugar","oil","aluminum","usdthb","resin"];
+
 fetch('data.json')
   .then(r => r.json())
   .then(render)
@@ -139,10 +155,14 @@ fetch('data.json')
     document.getElementById('cards').innerHTML =
       '<div class="card"><div class="label">Could not load data.json</div><div class="series">' + err + '</div></div>';
   });
+
 function render(data){
   const items = data.meta.items;
-  const history = data.history;
+  const history = data.history || [];
+  const monthlyHistory = data.monthly_history || [];
+
   if (data.meta.note) document.getElementById('sampleBanner').classList.add('show');
+
   const byItem = {};
   ORDER.forEach(k => byItem[k] = []);
   history.forEach(row => {
@@ -150,13 +170,23 @@ function render(data){
     byItem[row.item].push(row);
   });
   Object.keys(byItem).forEach(k => byItem[k].sort((a,b) => a.date.localeCompare(b.date)));
+
+  const monthlyByItem = {};
+  monthlyHistory.forEach(row => {
+    if (!monthlyByItem[row.item]) monthlyByItem[row.item] = [];
+    monthlyByItem[row.item].push({ label: row.month, value: row.avg_close });
+  });
+  Object.keys(monthlyByItem).forEach(k => monthlyByItem[k].sort((a,b) => a.label.localeCompare(b.label)));
+
   const allDates = history.map(r => r.date).sort();
   document.getElementById('lastUpdated').textContent = allDates[allDates.length - 1] || '—';
+
   const cardsEl = document.getElementById('cards');
   ORDER.forEach(key => {
     const meta = items[key];
     const series = byItem[key];
     if (!meta || !series || !series.length) return;
+
     const latest = series[series.length - 1];
     const prev = series.length > 1 ? series[series.length - 2] : null;
     let deltaClass = 'flat', deltaText = 'no prior reading';
@@ -167,6 +197,17 @@ function render(data){
       const arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '—');
       deltaText = arrow + ' ' + Math.abs(pct).toFixed(1) + '% vs last reading';
     }
+
+    let refHtml = '';
+    if (meta.domestic_ref) {
+      const r = meta.domestic_ref;
+      refHtml = `
+        <div class="ref-line">
+          ${r.label}<br>
+          White: <b>฿${r.white_sugar_thb_kg.toFixed(2)}</b>/kg · Refined: <b>฿${r.refined_white_sugar_thb_kg.toFixed(2)}</b>/kg
+        </div>`;
+    }
+
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -178,15 +219,21 @@ function render(data){
       </div>
       <div class="delta ${deltaClass}">${deltaText}</div>
       <canvas></canvas>
+      ${refHtml}
     `;
     cardsEl.appendChild(card);
+
+    const sparkSeries = (monthlyByItem[key] && monthlyByItem[key].length > 1)
+      ? monthlyByItem[key]
+      : series.map(r => ({ label: r.date, value: r.value }));
+
     const ctx = card.querySelector('canvas').getContext('2d');
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: series.map(r => r.date),
+        labels: sparkSeries.map(r => r.label),
         datasets: [{
-          data: series.map(r => r.value),
+          data: sparkSeries.map(r => r.value),
           borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent'),
           borderWidth: 1.5,
           pointRadius: 0,
@@ -202,6 +249,7 @@ function render(data){
       }
     });
   });
+
   const srcEl = document.getElementById('sourcesList');
   ORDER.forEach(key => {
     const meta = items[key];
@@ -210,14 +258,24 @@ function render(data){
     div.innerHTML = `<span>${meta.label}</span> — ${meta.source}`;
     srcEl.appendChild(div);
   });
-  const allLabels = [...new Set(history.map(r => r.date))].sort();
+
   const palette = ['#2F5D7C','#C08A2E','#5B6672','#2F7D5C','#B23A2E'];
+  const perItemSeries = {};
+  ORDER.forEach(key => {
+    if (monthlyByItem[key] && monthlyByItem[key].length > 1) {
+      perItemSeries[key] = monthlyByItem[key];
+    } else if (byItem[key] && byItem[key].length > 1) {
+      perItemSeries[key] = byItem[key].map(r => ({ label: r.date, value: r.value }));
+    }
+  });
+
+  const allLabels = [...new Set(Object.values(perItemSeries).flat().map(r => r.label))].sort();
   const datasets = ORDER.map((key, i) => {
-    const series = byItem[key];
-    if (!series || !series.length) return null;
+    const series = perItemSeries[key];
+    if (!series || series.length < 2) return null;
     const base = series[0].value;
     const map = {};
-    series.forEach(r => map[r.date] = (r.value / base) * 100);
+    series.forEach(r => map[r.label] = (r.value / base) * 100);
     let lastVal = null;
     const values = allLabels.map(d => {
       if (map[d] !== undefined) { lastVal = map[d]; return map[d]; }
@@ -234,6 +292,7 @@ function render(data){
       spanGaps: true
     };
   }).filter(Boolean);
+
   new Chart(document.getElementById('heroChart').getContext('2d'), {
     type: 'line',
     data: { labels: allLabels, datasets },
@@ -245,11 +304,12 @@ function render(data){
         legend: { position:'bottom', labels:{ font:{ family:"'IBM Plex Mono'", size:11 }, boxWidth:12 } }
       },
       scales: {
-        x: { grid: { display:false }, ticks:{ font:{ family:"'IBM Plex Mono'", size:10 } } },
+        x: { grid: { display:false }, ticks:{ font:{ family:"'IBM Plex Mono'", size:10 }, maxRotation:0, autoSkip:true } },
         y: { grid: { color:'#E7E9EB' }, ticks:{ font:{ family:"'IBM Plex Mono'", size:10 } }, title:{ display:true, text:'Index (first reading = 100)', font:{ size:11 } } }
       }
     }
   });
+
   function formatValue(v){
     return Number(v).toLocaleString(undefined, { minimumFractionDigits: v < 100 ? 2 : 0, maximumFractionDigits: v < 100 ? 2 : 0 });
   }
