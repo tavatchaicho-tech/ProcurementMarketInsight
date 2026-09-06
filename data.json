@@ -1,0 +1,18 @@
+{
+    "meta": {
+          "items": {
+                  "sugar": { "label": "Sugar", "series": "ICE Sugar No.11", "unit": "¢/lb", "source": "tradingeconomics.com/commodity/sugar" },
+                  "oil": { "label": "Crude Oil", "series": "Brent", "unit": "USD/bbl", "source": "tradingeconomics.com/commodity/brent-crude-oil" },
+                  "aluminum": { "label": "Aluminum", "series": "LME 3-month", "unit": "USD/t", "source": "tradingeconomics.com/commodity/aluminum" },
+                  "usdthb": { "label": "USD/THB", "series": "Exchange rate", "unit": "THB", "source": "tradingeconomics.com/thailand/currency" },
+                  "resin": { "label": "Resin (PE proxy)", "series": "Polyethylene, China", "unit": "CNY/t", "source": "tradingeconomics.com/commodity/polyethylene" }
+          }
+    },
+    "history": [
+          { "date": "2026-09-06", "item": "sugar", "value": 18.07 },
+          { "date": "2026-09-06", "item": "oil", "value": 96.28 },
+          { "date": "2026-09-06", "item": "aluminum", "value": 3292.50 },
+          { "date": "2026-09-06", "item": "usdthb", "value": 32.92 },
+          { "date": "2026-09-06", "item": "resin", "value": 8312.00 }
+    ]
+}
