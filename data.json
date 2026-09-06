@@ -1,18 +1,211 @@
 {
-    "meta": {
-          "items": {
-                  "sugar": { "label": "Sugar", "series": "ICE Sugar No.11", "unit": "¢/lb", "source": "tradingeconomics.com/commodity/sugar" },
-                  "oil": { "label": "Crude Oil", "series": "Brent", "unit": "USD/bbl", "source": "tradingeconomics.com/commodity/brent-crude-oil" },
-                  "aluminum": { "label": "Aluminum", "series": "LME 3-month", "unit": "USD/t", "source": "tradingeconomics.com/commodity/aluminum" },
-                  "usdthb": { "label": "USD/THB", "series": "Exchange rate", "unit": "THB", "source": "tradingeconomics.com/thailand/currency" },
-                  "resin": { "label": "Resin (PE proxy)", "series": "Polyethylene, China", "unit": "CNY/t", "source": "tradingeconomics.com/commodity/polyethylene" }
-          }
+  "meta": {
+    "items": {
+      "sugar": {
+        "label": "Sugar",
+        "series": "ICE London Sugar No.5",
+        "unit": "USD/MT",
+        "source": "investing.com/commodities/london-sugar",
+        "domestic_ref": {
+          "label": "Thai domestic ex-factory ref (สอน.), 2025/26 season",
+          "white_sugar_thb_kg": 21,
+          "refined_white_sugar_thb_kg": 22,
+          "note": "Set per crop-year, not a live market price. VAT excluded. Confirmed via Royal Gazette notice No.3, 3 Dec 2025."
+        }
+      },
+      "oil": {
+        "label": "Crude Oil",
+        "series": "Brent",
+        "unit": "USD/bbl",
+        "source": "tradingeconomics.com/commodity/brent-crude-oil"
+      },
+      "aluminum": {
+        "label": "Aluminum",
+        "series": "LME 3-month",
+        "unit": "USD/t",
+        "source": "tradingeconomics.com/commodity/aluminum"
+      },
+      "usdthb": {
+        "label": "USD/THB",
+        "series": "Exchange rate",
+        "unit": "THB",
+        "source": "tradingeconomics.com/thailand/currency"
+      },
+      "resin": {
+        "label": "Resin (PE proxy)",
+        "series": "Polyethylene, China",
+        "unit": "CNY/t",
+        "source": "tradingeconomics.com/commodity/polyethylene"
+      }
+    }
+  },
+  "history": [
+    {
+      "date": "2026-09-06",
+      "item": "sugar",
+      "value": 523.1
     },
-    "history": [
-          { "date": "2026-09-06", "item": "sugar", "value": 18.07 },
-          { "date": "2026-09-06", "item": "oil", "value": 96.28 },
-          { "date": "2026-09-06", "item": "aluminum", "value": 3292.50 },
-          { "date": "2026-09-06", "item": "usdthb", "value": 32.92 },
-          { "date": "2026-09-06", "item": "resin", "value": 8312.00 }
-    ]
+    {
+      "date": "2026-09-06",
+      "item": "oil",
+      "value": 96.28
+    },
+    {
+      "date": "2026-09-06",
+      "item": "aluminum",
+      "value": 3292.5
+    },
+    {
+      "date": "2026-09-06",
+      "item": "usdthb",
+      "value": 32.92
+    },
+    {
+      "date": "2026-09-06",
+      "item": "resin",
+      "value": 8312
+    }
+  ],
+  "monthly_history": [
+    {
+      "month": "2025-01",
+      "item": "sugar",
+      "avg_close": 519.5,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-02",
+      "item": "sugar",
+      "avg_close": 532.6,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-03",
+      "item": "sugar",
+      "avg_close": 534.9,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-04",
+      "item": "sugar",
+      "avg_close": 492.8,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-05",
+      "item": "sugar",
+      "avg_close": 476.1,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-06",
+      "item": "sugar",
+      "avg_close": 472.9,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-07",
+      "item": "sugar",
+      "avg_close": 467.8,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-08",
+      "item": "sugar",
+      "avg_close": 492.7,
+      "method": "month_end",
+      "n": 1
+    },
+    {
+      "month": "2025-09",
+      "item": "sugar",
+      "avg_close": 464.85,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2025-10",
+      "item": "sugar",
+      "avg_close": 434.1,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2025-11",
+      "item": "sugar",
+      "avg_close": 425.28,
+      "method": "weekly_average",
+      "n": 5
+    },
+    {
+      "month": "2025-12",
+      "item": "sugar",
+      "avg_close": 427.18,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2026-01",
+      "item": "sugar",
+      "avg_close": 419.57,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2026-02",
+      "item": "sugar",
+      "avg_close": 403.95,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2026-03",
+      "item": "sugar",
+      "avg_close": 435.04,
+      "method": "weekly_average",
+      "n": 5
+    },
+    {
+      "month": "2026-04",
+      "item": "sugar",
+      "avg_close": 426.6,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2026-05",
+      "item": "sugar",
+      "avg_close": 439.6,
+      "method": "weekly_average",
+      "n": 5
+    },
+    {
+      "month": "2026-06",
+      "item": "sugar",
+      "avg_close": 458.7,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2026-07",
+      "item": "sugar",
+      "avg_close": 464.85,
+      "method": "weekly_average",
+      "n": 4
+    },
+    {
+      "month": "2026-08",
+      "item": "sugar",
+      "avg_close": 520.74,
+      "method": "weekly_average",
+      "n": 5
+    }
+  ]
 }
