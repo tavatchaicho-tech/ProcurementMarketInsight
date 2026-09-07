@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thainamthip — Raw Material Intelligence Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#EFF1EE;
+    --surface:#FFFFFF;
+    --ink:#171B1A;
+    --ink-muted:#5B6560;
+    --line:#D8DCD8;
+    --y25:#7A7F73;
+    --y26:#B8452F;
+    --radius:4px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono', ui-monospace, monospace;}
+  .shell{max-width:900px;margin:0 auto;padding:56px 28px 90px;}
+
+  header.masthead{border-bottom:3px double var(--ink);padding-bottom:20px;margin-bottom:8px;}
+  header.masthead .kicker{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.04em;
+    color:var(--ink-muted);display:flex;justify-content:space-between;
+  }
+  header.masthead h1{font-size:38px;font-weight:700;margin:10px 0 6px;line-height:1.15;}
+  header.masthead .dek{font-size:17px;color:var(--ink-muted);font-style:italic;max-width:660px;}
+
+  section.hero{margin:36px 0 52px;}
+  section.hero .finding{
+    font-size:22px;line-height:1.5;margin-bottom:22px;padding-left:18px;border-left:3px solid var(--y26);
+  }
+  section.hero .finding b{color:var(--y26);}
+
+  .mini-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:10px;
+  }
+  @media (max-width:520px){ .mini-grid{grid-template-columns:repeat(2, minmax(0,1fr));} }
+
+  .chart-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 12px 8px;min-width:0;}
+  .chart-panel.big{padding:22px 22px 14px;}
+  .chart-panel .chart-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-muted);margin-bottom:8px;}
+  .chart-wrap{height:320px;position:relative;}
+  .chart-wrap.mini{height:130px;}
+  .chart-wrap canvas{max-width:100%;}
+
+  .legend-row{display:flex;gap:18px;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);flex-wrap:wrap;align-items:center;}
+  .legend-row span{display:flex;align-items:center;gap:6px;}
+  .legend-row i{width:14px;height:2px;display:inline-block;}
+  .legend-row i.dashed{height:0;border-top:2px dashed var(--y26);}
+
+  article.commodity{margin:52px 0;padding-top:36px;border-top:1px solid var(--line);}
+  article.commodity .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;flex-wrap:wrap;gap:8px;}
+  article.commodity h2{font-size:24px;margin:0;}
+  article.commodity .figure{font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--ink-muted);}
+  article.commodity .figure b{color:var(--ink);font-size:17px;}
+  article.commodity p.note{font-size:13px;color:var(--ink-muted);font-family:'IBM Plex Mono',monospace;margin-top:16px;}
+
+  .outlook{margin-top:22px;padding:16px 18px;background:var(--surface);border-left:3px solid var(--ink);border-radius:0 var(--radius) var(--radius) 0;}
+  .outlook .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.03em;color:var(--ink-muted);margin-bottom:8px;}
+  .outlook p{font-size:15px;margin:0 0 8px;max-width:640px;}
+  .outlook p:last-child{margin-bottom:0;}
+  .outlook .cite{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-muted);font-style:normal;}
+
+  .news{margin-top:16px;}
+  .news .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.03em;color:var(--ink-muted);margin-bottom:10px;}
+  .news ul{list-style:none;margin:0;padding:0;}
+  .news li{
+    padding:12px 0;
+    border-top:1px solid var(--line);
+  }
+  .news li:first-child{border-top:none;padding-top:0;}
+  .news li p{font-size:14.5px;margin:0 0 4px;max-width:620px;}
+  .news li a{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--y26);
+    text-decoration:none;
+    word-break:break-all;
+  }
+  .news li a:hover{text-decoration:underline;}
+
+  footer{margin-top:60px;padding-top:24px;border-top:3px double var(--ink);font-size:13px;color:var(--ink-muted);}
+  footer h4{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.03em;color:var(--ink);margin:0 0 10px;}
+  footer .src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 24px;margin-bottom:18px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  footer .src-grid span{color:var(--ink);}
+  footer p{margin:6px 0;}
+
+  @media (max-width:560px){
+    header.masthead h1{font-size:28px;}
+    section.hero .finding{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <div class="kicker">
+      <span>THAINAMTHIP · PROCUREMENT — STRATEGY &amp; SOLUTION</span>
+      <span>7 SEP 2026</span>
+    </div>
+    <h1>Raw Material Intelligence Briefing</h1>
+    <div class="dek">Sugar, aluminium, PET resin, Brent crude, and USD/THB — read month-against-month across 2025 and 2026, plus what forward analyst estimates say happens next.</div>
+  </header>
+
+  <section class="hero">
+    <div class="finding">
+      Brent crude jumped <b>+42.7% in a single month</b> — March 2026 — and every other series in this briefing broke from its 2025 pattern in that same month or the one after.
+    </div>
+    <div class="mini-grid">
+      <div class="chart-panel">
+        <div class="chart-label">SUGAR</div>
+        <div class="chart-wrap mini"><canvas id="miniSugar"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-label">ALUMINIUM</div>
+        <div class="chart-wrap mini"><canvas id="miniAlum"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-label">PET RESIN</div>
+        <div class="chart-wrap mini"><canvas id="miniPet"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-label">BRENT CRUDE</div>
+        <div class="chart-wrap mini"><canvas id="miniOil"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-label">USD/THB</div>
+        <div class="chart-wrap mini"><canvas id="miniFx"></canvas></div>
+      </div>
+    </div>
+    <div class="legend-row">
+      <span><i style="background:var(--y25)"></i>2025</span>
+      <span><i style="background:var(--y26)"></i>2026</span>
+      <span><i class="dashed"></i>War escalation, 28 Feb 2026 — Iran–Israel–US conflict shuts Strait of Hormuz shipping</span>
+    </div>
+  </section>
+
+  <article class="commodity">
+    <div class="head">
+      <h2>Brent Crude</h2>
+      <div class="figure"><b>96.28</b> USD/bbl <span class="mono">· 4 Sep</span></div>
+    </div>
+    <div class="chart-panel big">
+      <div class="chart-wrap"><canvas id="oilChart"></canvas></div>
+      <div class="legend-row">
+        <span><i style="background:var(--y25)"></i>2025</span>
+        <span><i style="background:var(--y26)"></i>2026</span>
+        <span><i class="dashed"></i>War escalation, 28 Feb 2026</span>
+      </div>
+    </div>
+    <p class="note">Monthly close · Source: investing.com/commodities/brent-oil-historical-data</p>
+
+    <div class="outlook">
+      <div class="tag">LOOKING AHEAD</div>
+      <p>The EIA has revised its Brent forecast up and down several times through 2026 as the war has escalated and eased — from an average of $56/bbl for the year before the war, to as high as $95/bbl mid-year when Middle East shut-ins peaked, before cutting back toward $82/bbl as disruptions eased, then lifting it again in a later report citing fresh supply risk. The throughline across every revision: 2027 is still expected to land lower than 2026, in the $60s-70s, as global oversupply reasserts itself once the conflict's shipping and production disruptions clear.</p>
+      <p class="cite">Source: EIA Short-Term Energy Outlook, Jan–Aug 2026 editions (via Hydrocarbon Engineering, Rigzone, Ship & Bunker)</p>
+    </div>
+
+    <div class="news">
+      <div class="tag">RELATED NEWS</div>
+      <ul>
+        <li>
+          <p>EIA's January outlook, published before the war, saw Brent averaging just $56/bbl in 2026 on rising global inventories — the baseline that the war upended weeks later.</p>
+          <a href="https://www.hydrocarbonengineering.com/refining/12022026" target="_blank" rel="noopener">hydrocarbonengineering.com/refining/12022026</a>
+        </li>
+        <li>
+          <p>A later EIA revision lifted its 2026 forecast again after fresh Middle East production shut-ins, estimating roughly 5.5 million bpd of disrupted output in July alone.</p>
+          <a href="https://investinglive.com/news/eia-raises-crude-oil-price-forecasts-as-middle-east-supply-risks-tighten-outlook/" target="_blank" rel="noopener">investinglive.com/news/eia-raises-crude-oil-price-forecasts</a>
+        </li>
+        <li>
+          <p>By July, EIA cut its full-year 2026 Brent forecast to $81.91/bbl as assumed supply disruptions eased — down sharply from $95.39/bbl the month before.</p>
+          <a href="https://shipandbunker.com/news/world/352050-eia-slashes-brent-forecast-as-supply-disruptions-ease-ship-bunker-cuts-bunker-price-outlook-sharply" target="_blank" rel="noopener">shipandbunker.com/news/world/352050</a>
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="commodity">
+    <div class="head">
+      <h2>Sugar</h2>
+      <div class="figure"><b>523.10</b> USD/MT <span class="mono">· 6 Sep</span></div>
+    </div>
+    <div class="chart-panel big">
+      <div class="chart-wrap"><canvas id="sugarChart"></canvas></div>
+      <div class="legend-row">
+        <span><i style="background:var(--y25)"></i>2025</span>
+        <span><i style="background:var(--y26)"></i>2026</span>
+        <span><i class="dashed"></i>War escalation, 28 Feb 2026</span>
+      </div>
+    </div>
+    <p class="note">Jan–Aug 2025: month-end close · Sep 2025–Aug 2026: monthly average of weekly closes · Source: investing.com/commodities/london-sugar</p>
+
+    <div class="outlook">
+      <div class="tag">LOOKING AHEAD</div>
+      <p>The supply glut behind 2025's decline is shrinking faster than expected. Trader Czarnikow cut its 2026/27 global surplus estimate from 3.4 million tonnes in February to just 1.1 million tonnes by late April, citing Brazil's accelerating shift of cane toward ethanol and a severe rainfall deficit in Thailand's own cane belt threatening the next ratoon crop. A smaller cushion means less room to absorb any further war-driven ethanol demand — but the surplus hasn't flipped to a deficit, so a ceasefire and falling oil could still pull prices back down toward 2025 levels.</p>
+      <p class="cite">Source: Czarnikow via Barchart, 27 Apr 2026; CropGPT Sugar Monthly Report, Apr 2026</p>
+    </div>
+
+    <div class="news">
+      <div class="tag">RELATED NEWS</div>
+      <ul>
+        <li>
+          <p>London white sugar for August 2026 delivery recovered from $412.30 to $435.30/tonne in a single week as surplus downgrades and a crude-driven ethanol premium overshadowed strong Indian and Brazilian supply.</p>
+          <a href="https://cropgpt.ai/sugar-rallies-5-as-surplus-downgrades-and-oil-prices-trigger-short-covering" target="_blank" rel="noopener">cropgpt.ai/sugar-rallies-5-as-surplus-downgrades</a>
+        </li>
+        <li>
+          <p>Sugar's April rally was reinforced by shrinking surplus forecasts across multiple analysts, alongside a freight risk premium tied to the Strait of Hormuz closure.</p>
+          <a href="https://www.barchart.com/story/news/1909650/expectations-for-global-sugar-deficits-push-prices-sharply-higher" target="_blank" rel="noopener">barchart.com/story/news/1909650</a>
+        </li>
+        <li>
+          <p>CropGPT's April monthly report details Thailand's own drought risk to the 2026/27 ratoon crop alongside the Czarnikow surplus downgrade.</p>
+          <a href="https://cropgpt.ai/crop-data/sugar/monthly-reports/sugar-monthly-report-april-2026" target="_blank" rel="noopener">cropgpt.ai/crop-data/sugar/monthly-reports/april-2026</a>
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="commodity">
+    <div class="head">
+      <h2>Aluminium</h2>
+      <div class="figure"><b>3,292.50</b> USD/t <span class="mono">· 6 Sep</span></div>
+    </div>
+    <div class="chart-panel big">
+      <div class="chart-wrap"><canvas id="aluminumChart"></canvas></div>
+      <div class="legend-row">
+        <span><i style="background:var(--y25)"></i>2025</span>
+        <span><i style="background:var(--y26)"></i>2026</span>
+        <span><i class="dashed"></i>War escalation, 28 Feb 2026</span>
+      </div>
+    </div>
+    <p class="note">2025: investing.com (MAL3) month-end · 2026: LME official Daily Settlement Report, 3-Months Mean, monthly average · Source: LME.com registered-user portal</p>
+
+    <div class="outlook">
+      <div class="tag">LOOKING AHEAD</div>
+      <p>Multiple market analysts frame 2026 as structurally tight independent of the war: China's smelter output is approaching its 45-million-tonne capacity ceiling, and the EU's Carbon Border Adjustment Mechanism takes full effect in 2026, with scrap export tariffs expected to squeeze secondary supply from spring onward. Demand from solar and EV manufacturing is also cited as a steady floor. SMM's research summary describes the likely path as a "breakthrough and return" year — meaning elevated volatility is more probable than a clean retreat to 2025 levels, even if the war itself de-escalates.</p>
+      <p class="cite">Source: SMM / AlCircle, "LME aluminium prices hit a three-year high in 2025 — overseas views on 2026 outlook," 28 Nov 2025</p>
+    </div>
+
+    <div class="news">
+      <div class="tag">RELATED NEWS</div>
+      <ul>
+        <li>
+          <p>SMM's year-ahead outlook lays out the structural case for 2026: a supply ceiling in China, incoming CBAM scrap tariffs, and steady green-energy demand.</p>
+          <a href="https://www.alcircle.com/press-release/lme-aluminium-prices-hit-a-three-year-high-in-2025-overseas-views-on-2026-outlook-116364" target="_blank" rel="noopener">alcircle.com/press-release/lme-aluminium-2026-outlook</a>
+        </li>
+        <li>
+          <p>The same SMM analysis, republished, frames 2026 as a "breakthrough and return" year for aluminium prices given the competing supply and demand forces.</p>
+          <a href="https://www.metal.com/en/newscontent/103644229" target="_blank" rel="noopener">metal.com/en/newscontent/103644229</a>
+        </li>
+        <li>
+          <p>Southeast Asia's secondary aluminium producers faced a margin squeeze as LME prices surged, with scrap costs rising even faster than finished-product prices.</p>
+          <a href="https://www.alcircle.com/press-release/southeast-asia-s-secondary-aluminium-industry-is-trapped-in-margin-squeeze-raw-material-surge-forces-adc12-plant-cuts-industry-may-enter-lunar-new-yea-116887" target="_blank" rel="noopener">alcircle.com/press-release/southeast-asia-margin-squeeze</a>
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="commodity">
+    <div class="head">
+      <h2>Resin — PET</h2>
+      <div class="figure"><b>1,015</b> USD/MT <span class="mono">· wk4 Jul</span></div>
+    </div>
+    <div class="chart-panel big">
+      <div class="chart-wrap"><canvas id="petChart"></canvas></div>
+      <div class="legend-row">
+        <span><i style="background:var(--y25)"></i>2025</span>
+        <span><i style="background:var(--y26)"></i>2026</span>
+        <span><i class="dashed"></i>War escalation, 28 Feb 2026</span>
+      </div>
+    </div>
+    <p class="note">Week-4 mean of each month, China ($/MT) column · Source: CEPG Asia PET weekly report, week 31 2026 edition · Aug 2026 onward pending a newer report</p>
+
+    <div class="outlook">
+      <div class="tag">LOOKING AHEAD</div>
+      <p>PET's feedstock chain (paraxylene → PTA → PET) keeps it tied to crude in the near term, so further oil moves from the war remain the dominant swing factor through the rest of 2026. Independent of the war, industry data points to a structural easing ahead: Asia is set to add roughly 47.6 million tonnes of new PTA capacity by 2027 — 89% of all global additions — which should widen feedstock supply and cap how far prices can run once new plants ramp up. IMARC's Q2 2026 tracking already shows China PET easing to around $953/MT as post-holiday supply normalized, consistent with the pullback visible in this briefing's own data from April's peak.</p>
+      <p class="cite">Source: GlobalData, "Asia to lead global PTA capacity additions by 2027," 2024; IMARC Group PET Resin Price Trend, Q2 2026, 21 Jul 2026</p>
+    </div>
+
+    <div class="news">
+      <div class="tag">RELATED NEWS</div>
+      <ul>
+        <li>
+          <p>IMARC's real-time tracking shows China PET resin at $953/MT in Q2 2026, recovering as post-holiday output resumed and paraxylene costs firmed the PTA cost floor.</p>
+          <a href="https://www.imarcgroup.com/news/pet-resin-prices-imarc-group-unveils-real-time-price-trends-regional-analysis-and-forecast" target="_blank" rel="noopener">imarcgroup.com/news/pet-resin-prices</a>
+        </li>
+        <li>
+          <p>GlobalData projects Asia will add 47.55 million tonnes of new PTA capacity by 2027 — 89% of all global additions — a structural supply increase for PET's key feedstock.</p>
+          <a href="https://www.globaldata.com/media/oil-gas/asia-lead-global-purified-terephthalic-acid-capacity-additions-2027-says-globaldata/" target="_blank" rel="noopener">globaldata.com/media/oil-gas/asia-pta-capacity-2027</a>
+        </li>
+        <li>
+          <p>Asia is also set to add 19.23 million tonnes of new xylene capacity by 2030, mainly to feed paraxylene demand for PET and PTA production.</p>
+          <a href="https://www.packaging-gateway.com/analyst-comment/asia-dominate-worldwide-xylene-2030-2/" target="_blank" rel="noopener">packaging-gateway.com/analyst-comment/asia-xylene-2030</a>
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="commodity">
+    <div class="head">
+      <h2>USD/THB</h2>
+      <div class="figure"><b>32.92</b> THB <span class="mono">· 6 Sep</span></div>
+    </div>
+    <div class="chart-panel big">
+      <div class="chart-wrap"><canvas id="fxChart"></canvas></div>
+      <div class="legend-row">
+        <span><i style="background:var(--y25)"></i>2025</span>
+        <span><i style="background:var(--y26)"></i>2026</span>
+        <span><i class="dashed"></i>War escalation, 28 Feb 2026</span>
+      </div>
+    </div>
+    <p class="note">Monthly close · Source: investing.com/currencies/usd-thb-historical-data</p>
+
+    <div class="outlook">
+      <div class="tag">LOOKING AHEAD</div>
+      <p>Commerzbank's FX desk notes the Bank of Thailand explicitly attributes recent baht volatility to Middle East developments and shifting Fed rate expectations, rather than domestic factors. The BoT has held its policy rate at 1.00% for three straight meetings and is expected to stay on hold into the first half of 2027. With no rate move expected from either side, Commerzbank calls for USD/THB to consolidate in a 32.50–33.00 range near-term — meaning further big swings would most likely come from another external shock, not a change in Thai monetary policy.</p>
+      <p class="cite">Source: Commerzbank via FXStreet, 27 Aug 2026</p>
+    </div>
+
+    <div class="news">
+      <div class="tag">RELATED NEWS</div>
+      <ul>
+        <li>
+          <p>Commerzbank's FX desk expects USD/THB to consolidate around 32.50-33.00 near-term, with the BoT on hold at 1.00% through at least H1 2027 and baht swings mainly tracking Middle East and Fed news rather than domestic policy.</p>
+          <a href="https://www.fxstreet.com/news/thai-baht-consolidation-expected-in-defined-range-against-us-dollar-commerzbank-202608271919" target="_blank" rel="noopener">fxstreet.com/news/thai-baht-consolidation-commerzbank</a>
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <footer>
+    <h4>METHODOLOGY &amp; SOURCES</h4>
+    <div class="src-grid">
+      <div><span>Brent Crude</span> — investing.com/commodities/brent-oil-historical-data</div>
+      <div><span>Sugar</span> — investing.com/commodities/london-sugar</div>
+      <div><span>Aluminium</span> — lme.com (registered-user monthly reports) + investing.com</div>
+      <div><span>PET Resin</span> — CEPG Asia PET weekly report (user-supplied)</div>
+      <div><span>USD/THB</span> — investing.com/currencies/usd-thb-historical-data</div>
+      <div><span>Outlook &amp; news sources</span> — EIA, Czarnikow, CropGPT, Barchart, SMM/AlCircle, GlobalData, IMARC, Commerzbank/FXStreet (see links above)</div>
+    </div>
+    <p>Charts plot real, unindexed prices in each series' native unit, month-aligned across calendar years. The dashed vertical line marks February 2026, when the Iran–Israel–US conflict escalated and closed shipping through the Strait of Hormuz — the shared trigger behind every series in this briefing. "Looking ahead" and "Related news" sections summarize third-party reporting and analyst commentary current as of publication date; they are not Thainamthip's own forecasts and should not be read as trading or investment advice. Prepared for internal procurement monitoring at Thainamthip.</p>
+  </footer>
+
+</div>
+
+<script>
+const CAL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WAR_INDEX = 1; // February 2026 — war broke out 28 Feb; effects visible from March
+
+const SUGAR_25 = [519.50,532.60,534.90,492.80,476.10,472.90,467.80,492.70,464.85,434.10,425.28,427.18];
+const SUGAR_26 = [419.57,403.95,435.04,426.60,439.60,458.70,464.85,520.74];
+
+const ALUM_25 = [2595.30,2608.05,2536.75,2397.50,2446.40,2601.65,2565.55,2620.15,2681.95,2892.55,2873.60,2995.95];
+const ALUM_26 = [3152.76,3090.33,3340.96,3545.08,3600.25,3438.32,3148.50,3250.61];
+
+const PET_25 = [805,800,787.5,735,790,797.5,785,775,760,745,745,770];
+const PET_26 = [825,847.5,1175,1205,1130,1000,1015];
+
+const OIL_25 = [76.76,72.81,74.74,63.12,63.90,67.61,71.70,68.12,67.02,64.77,62.38,60.49];
+const OIL_26 = [70.69,72.87,103.97,110.40,87.93,69.73,86.72,90.49,96.93];
+
+const FX_25 = [33.795,34.250,33.970,33.390,32.865,32.430,32.760,32.305,32.460,32.390,32.110,31.500];
+const FX_26 = [31.570,31.055,32.585,32.495,32.505,33.220,33.420,33.160,32.934];
+
+const warMarkerPlugin = {
+  id: 'warMarker',
+  afterDraw(chart){
+    if (!chart.config._showWar) return;
+    const {ctx, chartArea, scales} = chart;
+    const x = scales.x.getPixelForValue(WAR_INDEX);
+    if (x < chartArea.left || x > chartArea.right) return;
+    ctx.save();
+    ctx.strokeStyle = '#B8452F';
+    ctx.setLineDash([4,3]);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x, chartArea.top);
+    ctx.lineTo(x, chartArea.bottom);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+Chart.register(warMarkerPlugin);
+
+function yoyDatasets(series25, series26){
+  return [
+    { label:'2025', data: series25, borderColor:'#7A7F73', borderWidth:2, pointRadius:0, tension:0.2 },
+    { label:'2026', data: series26, borderColor:'#B8452F', borderWidth:2.4, pointRadius:0, tension:0.2 }
+  ];
+}
+
+function yoyOptions(showAxis, yTitle){
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { display:false }, ticks: showAxis ? { font:{ family:"'IBM Plex Mono'", size:10 } } : { display:false } },
+      y: { grid: { color:'#E4E7E3' }, ticks: showAxis ? { font:{ family:"'IBM Plex Mono'", size:10 } } : { display:false },
+           title: { display: !!yTitle, text:yTitle, font:{size:11} } }
+    }
+  };
+}
+
+function buildChart(canvasId, series25, series26, showAxis, yTitle, showWar){
+  const c = new Chart(document.getElementById(canvasId).getContext('2d'), {
+    type: 'line',
+    data: { labels: CAL_MONTHS, datasets: yoyDatasets(series25, series26) },
+    options: yoyOptions(showAxis, yTitle)
+  });
+  c.config._showWar = showWar;
+  c.update();
+  return c;
+}
+
+buildChart('miniSugar', SUGAR_25, SUGAR_26, false, null, true);
+buildChart('miniAlum', ALUM_25, ALUM_26, false, null, true);
+buildChart('miniPet', PET_25, PET_26, false, null, true);
+buildChart('miniOil', OIL_25, OIL_26, false, null, true);
+buildChart('miniFx', FX_25, FX_26, false, null, true);
+
+buildChart('oilChart', OIL_25, OIL_26, true, 'USD/bbl', true);
+buildChart('sugarChart', SUGAR_25, SUGAR_26, true, 'USD/MT', true);
+buildChart('aluminumChart', ALUM_25, ALUM_26, true, 'USD/t', true);
+buildChart('petChart', PET_25, PET_26, true, 'USD/MT', true);
+buildChart('fxChart', FX_25, FX_26, true, 'THB', true);
+</script>
+</body>
+</html>
